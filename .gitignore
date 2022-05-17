@@ -1,0 +1,4 @@
+/persistence/
+/environment/.env
+/services/auth/node_modules/
+/services/product/node_modules/

@@ -1,0 +1,63 @@
+version: '3.3'
+
+networks:
+  vpcbrLazaro:
+    ipam:
+     driver: default
+     config:
+        - subnet: 10.25.0.0/8
+
+services:
+  http:
+    build:
+      context: .
+      dockerfile: http/Dockerfile
+    container_name: http
+    ports:
+      - "8080:80"
+    networks:
+      vpcbrLazaro:
+        ipv4_address: 10.25.0.10
+
+  product:
+    build:
+      context: .
+      dockerfile: services/product/Dockerfile
+    container_name: product
+    networks:
+      vpcbrLazaro:
+        ipv4_address: 10.25.0.1
+    volumes:
+      -  ./services/product:/home/api
+      -  ./shared:/home/api/shared
+    env_file:
+      - ./environment/.env
+
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    container_name: auth
+    networks:
+      vpcbrLazaro:
+        ipv4_address: 10.23.0.2
+    volumes:
+      -  ./services/auth:/home/api
+      -  ./shared:/home/api/shared
+    env_file:
+      - ./environment/.env
+
+  mongo:
+    image: mongo
+    restart: always
+    container_name: mongo-lazaro
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    networks:
+      vpcbrLazaro:
+        ipv4_address: 10.25.0.3
+    volumes:
+      - ./persistence/mongo/data:/data/db
